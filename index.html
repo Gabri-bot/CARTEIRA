@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#2C2C2A"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="FinWallet"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<title>FinWallet</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1a1a18;min-height:100vh;display:flex;justify-content:center;overflow-x:hidden}
+.app{width:100%;max-width:430px;min-height:100vh;background:#111110;overflow-y:auto;overflow-x:hidden;padding-bottom:80px}
+.statusbar{height:env(safe-area-inset-top,24px);background:#2C2C2A}
+.topbar{background:#2C2C2A;padding:12px 20px 16px;display:flex;justify-content:space-between;align-items:center}
+.topbar-left .greeting{font-size:12px;color:#888780;margin-bottom:2px}
+.name-wrap{display:flex;align-items:center;gap:6px}
+.user-name{font-size:16px;font-weight:600;color:#F1EFE8;cursor:pointer;border-bottom:1px dashed #534AB7;padding-bottom:1px}
+.user-name:hover{color:#AFA9EC}
+.edit-name-icon{font-size:14px;color:#534AB7;cursor:pointer;user-select:none}
+.name-input-wrap{display:none;align-items:center;gap:6px}
+.name-input-wrap.show{display:flex}
+.name-input{background:#111110;border:0.5px solid #534AB7;border-radius:6px;padding:4px 8px;font-size:15px;font-weight:600;color:#F1EFE8;outline:none;width:140px;font-family:inherit}
+.name-save{background:#534AB7;color:#EEEDFE;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
+.name-clear{background:#333;color:#888780;border:none;border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer}
+.avatar{width:38px;height:38px;border-radius:50%;background:#534AB7;display:flex;align-items:center;justify-content:center;color:#CECBF6;font-size:13px;font-weight:600;flex-shrink:0}
+.content{padding:16px}
+.balance-card{background:linear-gradient(135deg,#2C2C2A 0%,#1f1f1d 100%);border:0.5px solid #444;border-radius:18px;padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
+.balance-card::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:rgba(83,74,183,0.12)}
+.bal-label{font-size:11px;color:#888780;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.bal-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.bal-amount{font-size:34px;font-weight:700;color:#F1EFE8;letter-spacing:-1px;transition:filter .3s}
+.bal-amount.blur{filter:blur(8px)}
+.eye-btn{background:none;border:none;cursor:pointer;color:#888780;font-size:22px;padding:4px;line-height:1}
+.bal-sub{font-size:11px;color:#5F5E5A}
+.quick-edit{display:none;margin-top:12px;gap:8px;align-items:center}
+.quick-edit.show{display:flex}
+.quick-edit input{flex:1;padding:8px 12px;background:#111110;border:0.5px solid #534AB7;border-radius:8px;font-size:15px;color:#F1EFE8;outline:none}
+.quick-edit button{padding:8px 16px;background:#534AB7;color:#EEEDFE;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
+.act{background:#1f1f1d;border:0.5px solid #333;border-radius:14px;padding:18px 6px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:background .15s,transform .1s;user-select:none}
+.act:active{background:#2a2a28;transform:scale(0.95)}
+.act-icon{font-size:26px;color:#8b84d9}
+.act-label{font-size:13px;color:#D3D1C7;font-weight:500}
+.act-sub{font-size:11px;color:#5F5E5A}
+.section-title{font-size:12px;font-weight:600;color:#5F5E5A;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.txlist{display:flex;flex-direction:column;gap:8px}
+.tx{background:#1f1f1d;border:0.5px solid #333;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;transition:background .15s}
+.tx-ico{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.tx-ico.in{background:rgba(99,153,34,.15);color:#97C459}
+.tx-ico.out{background:rgba(216,90,48,.15);color:#F09575}
+.tx-info{flex:1}
+.tx-name{font-size:13px;font-weight:500;color:#D3D1C7}
+.tx-date{font-size:11px;color:#5F5E5A;margin-top:2px}
+.tx-val{font-size:14px;font-weight:600}
+.tx-val.in{color:#97C459}
+.tx-val.out{color:#F09575}
+.admin-panel{display:none;margin-top:16px;background:#1a0e0e;border:0.5px dashed #993C1D;border-radius:14px;padding:14px}
+.admin-panel.show{display:block}
+.admin-head{font-size:12px;font-weight:700;color:#F09575;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.admin-item{background:#111110;border:0.5px solid #333;border-radius:8px;padding:8px 10px}
+.admin-item .lbl{font-size:10px;color:#5F5E5A}
+.admin-item .val{font-size:13px;font-weight:600;color:#D3D1C7}
+.edit-bal-btn{width:100%;padding:11px;background:#D85A30;color:#FAF0E8;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.edit-bal-btn:active{transform:scale(.97)}
+.navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#1f1f1d;border-top:0.5px solid #333;display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px))}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 0}
+.nav-icon{font-size:24px;color:#5F5E5A;transition:color .15s}
+.nav-label{font-size:10px;color:#5F5E5A;transition:color .15s}
+.nav-item.active .nav-icon,.nav-item.active .nav-label{color:#8b84d9}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:#1f1f1d;border-radius:20px 20px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));width:100%;max-width:430px;transform:translateY(60px);transition:transform .25s;border-top:0.5px solid #444}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-title{font-size:17px;font-weight:700;color:#F1EFE8;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:#888780;font-size:24px;cursor:pointer;line-height:1}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;color:#888780;margin-bottom:5px;display:block}
+.form-input{width:100%;padding:12px 14px;background:#111110;border:0.5px solid #444;border-radius:10px;font-size:15px;color:#F1EFE8;outline:none;font-family:inherit}
+.form-input:focus{border-color:#534AB7}
+.confirm-btn{width:100%;padding:14px;background:#534AB7;color:#EEEDFE;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer}
+.confirm-btn:active{transform:scale(.98)}
+.toast{position:fixed;top:env(safe-area-inset-top,24px);left:50%;transform:translateX(-50%) translateY(-80px);background:#3B6D11;color:#C0DD97;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:999;transition:transform .3s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(16px)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="statusbar"></div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="greeting">Bem-vindo de volta</div>
+      <div class="name-wrap" id="nameDisplay">
+        <span class="user-name" id="userName" onclick="startEditName()" title="Toque para editar">João Silva</span>
+        <span class="edit-name-icon" onclick="startEditName()">✎</span>
+      </div>
+      <div class="name-input-wrap" id="nameEdit">
+        <input class="name-input" id="nameInput" placeholder="Seu nome (ou deixe vazio)" maxlength="24"/>
+        <button class="name-save" onclick="saveName()">OK</button>
+        <button class="name-clear" onclick="clearName()">✕</button>
+      </div>
+    </div>
+    <div class="avatar" id="avatarEl">JS</div>
+  </div>
+
+  <div class="content">
+    <div class="balance-card" id="balCard">
+      <div class="bal-label">Saldo disponível</div>
+      <div class="bal-row">
+        <div class="bal-amount" id="balAmt">R$ 4.827,50</div>
+        <button class="eye-btn" onclick="toggleVis(event)" aria-label="Ocultar saldo">👁</button>
+      </div>
+      <div class="bal-sub" id="balSub">Atualizado agora · FinWallet</div>
+      <div class="quick-edit" id="quickEdit">
+        <input type="number" id="editVal" placeholder="Novo saldo" step="0.01"/>
+        <button onclick="applyEdit()">OK</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="act" onclick="openModal('depositar')">
+        <span class="act-icon">⊕</span>
+        <span class="act-label">Depositar</span>
+        <span class="act-sub">Adicionar saldo</span>
+      </div>
+      <div class="act" onclick="openModal('pix')">
+        <span class="act-icon">↗</span>
+        <span class="act-label">Enviar Pix</span>
+        <span class="act-sub">Transferência instantânea</span>
+      </div>
+    </div>
+
+    <div class="section-title">Transações recentes</div>
+    <div class="txlist">
+      <div class="tx"><div class="tx-ico in">↓</div><div class="tx-info"><div class="tx-name">Maria Souza</div><div class="tx-date">Hoje 14:32 · Pix recebido</div></div><div class="tx-val in">+R$ 350,00</div></div>
+      <div class="tx"><div class="tx-ico out">↑</div><div class="tx-info"><div class="tx-name">Conta de Luz</div><div class="tx-date">Ontem 09:15 · Boleto</div></div><div class="tx-val out">-R$ 187,40</div></div>
+      <div class="tx"><div class="tx-ico in">↓</div><div class="tx-info"><div class="tx-name">Salário · Empresa LTDA</div><div class="tx-date">01 jun 08:00 · TED</div></div><div class="tx-val in">+R$ 5.200,00</div></div>
+      <div class="tx"><div class="tx-ico out">↑</div><div class="tx-info"><div class="tx-name">Mercado Pago</div><div class="tx-date">30 mai 18:55 · Compra</div></div><div class="tx-val out">-R$ 92,30</div></div>
+    </div>
+
+    <div class="admin-panel" id="adminPanel">
+      <div class="admin-head">🔒 Painel Admin</div>
+      <div class="admin-grid">
+        <div class="admin-item"><div class="lbl">Backend</div><div class="val">Java / Kotlin</div></div>
+        <div class="admin-item"><div class="lbl">Framework</div><div class="val">Spring Boot</div></div>
+        <div class="admin-item"><div class="lbl">Core banking</div><div class="val">COBOL + Oracle</div></div>
+        <div class="admin-item"><div class="lbl">Antifraude</div><div class="val">Python</div></div>
+        <div class="admin-item"><div class="lbl">APIs</div><div class="val">Node.js</div></div>
+        <div class="admin-item"><div class="lbl">Frontend</div><div class="val">React / Angular</div></div>
+      </div>
+      <button class="edit-bal-btn" onclick="toggleEdit()">✏️ Editar saldo manualmente</button>
+    </div>
+  </div>
+</div>
+
+<div class="navbar">
+  <div class="nav-item active"><span class="nav-icon">⌂</span><span class="nav-label">Início</span></div>
+  <div class="nav-item" onclick="openModal('pix')"><span class="nav-icon">↗</span><span class="nav-label">Pix</span></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title"><span id="modalTitle"></span><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let balance = 4827.50;
+let visible = true;
+let taps = 0, tapTmr = null;
+let editOpen = false;
+
+function fmt(v){return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+function initName(){
+  const saved = localStorage.getItem('fw_name');
+  if(saved !== null) applyName(saved);
+}
+
+function applyName(name){
+  const nameEl = document.getElementById('userName');
+  const avatarEl = document.getElementById('avatarEl');
+  const greetEl = document.querySelector('.greeting');
+  if(!name || name.trim()===''){
+    nameEl.textContent = '';
+    nameEl.style.display = 'none';
+    document.getElementById('nameDisplay').querySelector('.edit-name-icon').style.display = 'inline';
+    avatarEl.textContent = '?';
+    greetEl.style.display = 'none';
+  } else {
+    nameEl.style.display = 'inline';
+    greetEl.style.display = 'block';
+    nameEl.textContent = name.trim();
+    const parts = name.trim().split(' ');
+    const initials = parts.length>=2 ? parts[0][0]+parts[parts.length-1][0] : parts[0].substring(0,2);
+    avatarEl.textContent = initials.toUpperCase();
+  }
+}
+
+function startEditName(){
+  document.getElementById('nameDisplay').style.display = 'none';
+  const wrap = document.getElementById('nameEdit');
+  wrap.classList.add('show');
+  const inp = document.getElementById('nameInput');
+  inp.value = document.getElementById('userName').textContent;
+  inp.focus();
+}
+
+function saveName(){
+  const val = document.getElementById('nameInput').value;
+  localStorage.setItem('fw_name', val);
+  applyName(val);
+  document.getElementById('nameEdit').classList.remove('show');
+  document.getElementById('nameDisplay').style.display = 'flex';
+  showToast(val.trim() ? 'Nome atualizado!' : 'Nome removido!');
+}
+
+function clearName(){
+  document.getElementById('nameInput').value = '';
+  saveName();
+}
+
+document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') saveName(); });
+
+function toggleVis(e){
+  e.stopPropagation();
+  visible=!visible;
+  document.getElementById('balAmt').classList.toggle('blur',!visible);
+}
+
+document.getElementById('balCard').addEventListener('click',function(e){
+  if(e.target.closest('button')||e.target.closest('.quick-edit'))return;
+  taps++;clearTimeout(tapTmr);
+  tapTmr=setTimeout(()=>{taps=0},700);
+  if(taps>=5){taps=0;document.getElementById('adminPanel').classList.toggle('show');}
+});
+
+function toggleEdit(){
+  editOpen=!editOpen;
+  const qe=document.getElementById('quickEdit');
+  qe.classList.toggle('show',editOpen);
+  if(editOpen){document.getElementById('editVal').value=balance.toFixed(2);document.getElementById('editVal').focus();}
+}
+
+function applyEdit(){
+  const v=parseFloat(document.getElementById('editVal').value);
+  if(isNaN(v)||v<0){showToast('Valor inválido');return;}
+  balance=v;
+  document.getElementById('balAmt').textContent=fmt(balance);
+  document.getElementById('balSub').textContent='Saldo editado · FinWallet';
+  editOpen=false;
+  document.getElementById('quickEdit').classList.remove('show');
+  showToast('Saldo atualizado!');
+}
+
+const forms={
+  pix:{title:'Enviar Pix',body:`<div class="form-group"><label class="form-label">Chave Pix</label><input class="form-input" placeholder="CPF, e-mail ou telefone"/></div><div class="form-group"><label class="form-label">Valor</label><input class="form-input" type="number" id="opVal" placeholder="0,00"/></div><div class="form-group"><label class="form-label">Mensagem</label><input class="form-input" placeholder="Opcional"/></div><button class="confirm-btn" onclick="doOp('pix')">Confirmar Pix</button>`},
+  depositar:{title:'Depositar',body:`<div class="form-group"><label class="form-label">Valor</label><input class="form-input" type="number" id="opVal" placeholder="0,00"/></div><button class="confirm-btn" onclick="doOp('depositar')">Confirmar depósito</button>`}
+};
+
+function openModal(t){
+  document.getElementById('modalTitle').textContent=forms[t].title;
+  document.getElementById('modalBody').innerHTML=forms[t].body;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(e){
+  if(!e||e.target===document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+function doOp(t){
+  const el=document.getElementById('opVal');
+  const v=el?parseFloat(el.value)||0:0;
+  if(t==='depositar'&&v>0){balance+=v;document.getElementById('balAmt').textContent=fmt(balance);}
+  if(t==='pix'&&v>0&&v<=balance){balance-=v;document.getElementById('balAmt').textContent=fmt(balance);}
+  closeModal();showToast('Operação realizada!');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  const btn=document.createElement('button');
+  btn.textContent='📲 Instalar App';
+  btn.style.cssText='position:fixed;bottom:90px;right:16px;padding:10px 18px;background:#534AB7;color:#fff;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;z-index:300;box-shadow:0 4px 12px rgba(0,0,0,.4)';
+  btn.onclick=()=>{deferredPrompt.prompt();btn.remove();};
+  document.body.appendChild(btn);
+});
+
+initName();
+</script>
+</body>
+</html>
